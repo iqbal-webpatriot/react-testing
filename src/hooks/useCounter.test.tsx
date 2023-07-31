@@ -1,4 +1,4 @@
-import {renderHook} from "@testing-library/react"
+import {renderHook,act} from "@testing-library/react"
 import useCounter from "./useCounter";
 describe("useCounter hook",()=>{
         test('should render the initial count 0',()=>{
@@ -12,6 +12,16 @@ describe("useCounter hook",()=>{
                 }
             });
             expect(result.current.count).toBe(10)
+        });
+        test('should increment the initial count by 1  ',()=>{
+            const {result }=renderHook(useCounter);
+            act(()=>result.current.incrementCountHandler())
+            expect(result.current.count).toBe(1)
+        });
+        test('should decrement the initial count by -1  ',()=>{
+            const {result }=renderHook(useCounter);
+            act(()=>result.current.decrementCountHandler())
+            expect(result.current.count).toBeGreaterThanOrEqual(0)
         });
       
 })
