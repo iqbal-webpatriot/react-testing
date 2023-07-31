@@ -5,6 +5,7 @@ export default function Counter() {
   return (
    <>
    <h1>Count : {count}</h1>
+   <button onClick={(e)=>{setCount(1)}}>Increment</button>
    </>
   )
 }
