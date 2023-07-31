@@ -1,4 +1,4 @@
-import {render,screen} from '@testing-library/react'
+import {render,screen,act} from '@testing-library/react'
 import user from '@testing-library/user-event'
 import Counter from './Counter'
 
@@ -24,8 +24,11 @@ describe('Counter',()=>{
         user.setup()
         render(<Counter/>)
         const incrementButtonElement= screen.getByRole('button',{name:'Increment'});
-         await user.click(incrementButtonElement)
-         const counterElement= screen.getByRole('heading',{level:1});
-         expect(counterElement).toHaveTextContent('1')
+        act( async()=>{
+            await user.click(incrementButtonElement);
+            const counterElement= screen.getByRole('heading',{level:1});
+            expect(counterElement).toHaveTextContent('1')
+        })
+       
     })
 })
