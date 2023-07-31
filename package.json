@@ -20,7 +20,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --verbose --watchAll=false",
+    "test": "react-scripts test --verbose ",
     "eject": "react-scripts eject",
     "coverage": "react-scripts test --coverage --watchAll --collectCoverageFrom='src/components/**/*.{ts,tsx}' --collectCoverageFrom='!src/components/**/*.{types,stories,test,spec}.{ts,tsx}'"
   },
