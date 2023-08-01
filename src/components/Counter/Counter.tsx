@@ -4,7 +4,8 @@ export default function Counter() {
   const { count, incrementCountHandler, decrementCountHandler } = useCounter({
     initialValue: 20,
   });
-
+  const name = 123213
+  name='asdfsd'
   return (
     <>
       <h1>Count : {count}</h1>
