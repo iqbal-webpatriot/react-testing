@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { SkillTypes } from "./skills.types";
+import React, { useEffect, useState } from 'react';
+import { SkillTypes } from './skills.types';
 
 export default function Skills({ skills }: SkillTypes) {
   const [showButton, setShowButton] = useState(false);

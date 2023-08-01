@@ -1,6 +1,6 @@
-import { Routes, Route } from "react-router-dom";
-import Application from "../components/Application/Application";
-import Counter from "../components/Counter/Counter";
+import { Routes, Route } from 'react-router-dom';
+import Application from '../components/Application/Application';
+import Counter from '../components/Counter/Counter';
 
 export default function AllRoutes() {
   return (
