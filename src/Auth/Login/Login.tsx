@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useState } from 'react';
 
 export default function Login() {
@@ -27,26 +26,28 @@ export default function Login() {
   };
   return (
     <>
-      <form onSubmit={handleLogin}>
-        <label>
-          Username:
+      <div className="App">
+        <form onSubmit={handleLogin}>
+          <label htmlFor="username">Username:</label>
           <input
+            id="username"
             type="text"
+            name="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-        </label>
-        <label>
-          Password:
+          <label htmlFor="password">Password:</label>
           <input
+            id="password"
             type="password"
+            name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </label>
-        <button type="submit">Login</button>
-        {error && <div role="alert">{error}</div>}
-      </form>
+          <button type="submit">Login</button>
+          {error && <div role="alert">{error}</div>}
+        </form>
+      </div>
     </>
   );
 }
