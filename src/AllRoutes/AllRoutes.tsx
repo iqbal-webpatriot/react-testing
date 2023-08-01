@@ -1,8 +1,6 @@
-import React from 'react'
+
 import { Routes,Route } from 'react-router-dom'
 import Application from '../components/Application/Application'
-import Skills from '../components/Skills/Skills'
-import { dummySkills } from '../components/Skills/Skills.test'
 import Counter from '../components/Counter/Counter'
 
 export default function AllRoutes() {

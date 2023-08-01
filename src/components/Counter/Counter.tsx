@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+
 import useCounter from '../../hooks/useCounter'
 
 export default function Counter() {

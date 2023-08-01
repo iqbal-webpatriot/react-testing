@@ -13,14 +13,14 @@ describe('Counter',()=>{
         const counterElement= screen.getByRole('heading',{level:1});
         expect(counterElement).toHaveTextContent('0')
     })
-    test("render an increment button ",async () => {
+    test("render an increment button",async () => {
         render(<Counter/>)
         const incrementButtonElement= screen.getByRole('button',{
             name:'Increment'
         });
         expect(incrementButtonElement).toBeInTheDocument()
     })
-    test("render an decrement button ",async () => {
+    test("render an decrement button",async () => {
         render(<Counter/>)
         const incrementButtonElement= screen.getByRole('button',{
             name:'Decrement'
@@ -32,6 +32,7 @@ describe('Counter',()=>{
         render(<Counter/>)
         const incrementButtonElement = screen.getByRole('button', {name:'Increment'});
     
+        // eslint-disable-next-line testing-library/no-unnecessary-act
         await act(async () => {
             user.click(incrementButtonElement);
         });
@@ -44,6 +45,7 @@ describe('Counter',()=>{
         render(<Counter/>)
         const decrementButtonElement = screen.getByRole('button', {name:'Decrement'});
     
+        // eslint-disable-next-line testing-library/no-unnecessary-act
         await act(async () => {
             user.click(decrementButtonElement);
         });

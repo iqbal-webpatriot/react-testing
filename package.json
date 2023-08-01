@@ -10,6 +10,7 @@
     "@types/react": "^18.2.17",
     "@types/react-dom": "^18.2.7",
     "axios": "^1.4.0",
+    "eslint-plugin-jest-dom": "^5.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.14.2",
@@ -22,12 +23,14 @@
     "build": "react-scripts build",
     "test": "react-scripts test --verbose ",
     "eject": "react-scripts eject",
+    "lint":"eslint --ignore-path .gitignore .",
     "coverage": "react-scripts test --coverage --watchAll --collectCoverageFrom='src/components/**/*.{ts,tsx}' --collectCoverageFrom='!src/components/**/*.{types,stories,test,spec}.{ts,tsx}'"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "plugin:jest-dom/recommended"
     ]
   },
   "browserslist": {

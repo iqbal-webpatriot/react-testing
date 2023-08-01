@@ -1,4 +1,4 @@
-import {queryByRole, render,screen} from '@testing-library/react'
+import { render,screen} from '@testing-library/react'
 import Skills from './Skills'
 export const dummySkills=['Nodejs',"Reactjs"]
 describe("Skills",()=>{
@@ -18,7 +18,7 @@ describe("Skills",()=>{
         const listItemElement= screen.getAllByRole('listitem');
         expect(listItemElement).toHaveLength(dummySkills.length)
     })
-    test(' render the login  button',()=>{
+    test('render the login  button',()=>{
         render(<Skills skills={dummySkills}/>)
         const loginButtonElement= screen.queryByRole("button",{name:"Login"})
         expect(loginButtonElement).toBeInTheDocument()
