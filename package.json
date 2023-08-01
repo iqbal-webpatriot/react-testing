@@ -56,8 +56,9 @@
     "@testing-library/user-event": "^14.4.3",
     "husky": "^8.0.0"
   },
-  "lint-staged":{
-    ".*{ts,tsx}":["eslint"],
-    ".*{ts,tsx,css,scss}":["prettier --write"]
-  }
+  "lint-staged": {
+    "**/*.{ts,tsx}": ["eslint"],
+    "**/*.{ts,tsx,css,scss}": ["prettier --write"]
+}
+
 }

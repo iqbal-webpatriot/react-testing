@@ -5,10 +5,6 @@ export default function Counter() {
     initialValue: 20,
   });
 
-
-
-  
-
   return (
     <>
       <h1>Count : {count}</h1>
