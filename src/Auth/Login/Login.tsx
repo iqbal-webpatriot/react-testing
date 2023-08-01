@@ -43,6 +43,9 @@ export default function Login() {
             value={userInput.username}
             onChange={inputHandler}
           />
+          {errorMessage?.username && (
+            <div role="alert">{errorMessage?.username}</div>
+          )}
           <br />
           <label htmlFor="password">Password:</label>
           <br />
@@ -53,6 +56,9 @@ export default function Login() {
             value={userInput.password}
             onChange={inputHandler}
           />
+          {errorMessage?.password && (
+            <div role="alert">{errorMessage?.password}</div>
+          )}
           <br />
           <button type="submit">Login</button>
           {errorMessage?.invalidLogin && (
