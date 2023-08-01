@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { ErrorMessage, LoginInputSate } from './login.types';
 
 export default function Login() {
-  const [userInput, setUserInput] = useState<LoginInputSate>(
-    {} as LoginInputSate,
-  );
+  const [userInput, setUserInput] = useState<LoginInputSate>({
+    username: '',
+    password: '',
+  });
   const [errorMessage, setErrorMessage] = useState<ErrorMessage>(
     {} as ErrorMessage,
   );

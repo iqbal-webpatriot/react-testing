@@ -17,6 +17,18 @@ describe('Login', () => {
     const allErrorMessageElements = screen.queryAllByRole('alert');
     expect(allErrorMessageElements.length).toEqual(0);
   });
+  test('error messages are  rendered when username and password are empty', async () => {
+    user.setup();
+    render(<Login />);
+    //!this test will ensure that no error message element is rendered
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /login/i }));
+    });
+    await waitFor(async () => {
+      const allErrorMessageElements = await screen.findAllByRole('alert');
+      expect(allErrorMessageElements.length).toEqual(2);
+    });
+  });
   test('user should be able to fill form and  login', async () => {
     user.setup();
     render(<Login />);
