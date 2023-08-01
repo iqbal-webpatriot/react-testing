@@ -11,13 +11,46 @@ export default function Login() {
 
   const handleLogin = async (event: React.SyntheticEvent) => {
     event.preventDefault();
-
+    //empty field checks
+    const { username, password } = userInput;
+    if (username === '' && password === '') {
+      setErrorMessage({
+        username: 'This field is required',
+        password: 'This field is required',
+      });
+      return;
+    }
+    if (username === '') {
+      setErrorMessage({
+        username: 'This field is required',
+        password: '',
+      });
+      return;
+    }
+    if (password === '') {
+      setErrorMessage({
+        username: '',
+        password: 'This field is required',
+      });
+      return;
+    }
     try {
-      const response = await fetch('https://api.example.com/login', {
-        method: 'post',
-        body: JSON.stringify(userInput),
+      const response = await fetch('/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...userInput,
+        }),
       });
       const jsonResult = await response.json();
+      if (jsonResult.status === 'success') {
+        setErrorMessage({
+          invalidLogin: 'Logged Successfully',
+        });
+      } else {
+        setErrorMessage({
+          invalidLogin: jsonResult.errorMessage,
+        });
+      }
       // Successful login, now redirect or do whatever you want with the response
       console.log('Success:', jsonResult);
     } catch (error) {
@@ -33,7 +66,7 @@ export default function Login() {
   return (
     <>
       <div className="App">
-        <form onSubmit={handleLogin}>
+        <form>
           <label htmlFor="username">Username:</label>
           <br />
           <input
@@ -60,7 +93,9 @@ export default function Login() {
             <div role="alert">{errorMessage?.password}</div>
           )}
           <br />
-          <button type="submit">Login</button>
+          <button onClick={handleLogin} type="submit">
+            Login
+          </button>
           {errorMessage?.invalidLogin && (
             <div role="alert">{errorMessage?.invalidLogin}</div>
           )}
