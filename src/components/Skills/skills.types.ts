@@ -1,3 +1,3 @@
-export type SkillTypes={
-   skills:string[]
-}
+export type SkillTypes = {
+  skills: string[];
+};

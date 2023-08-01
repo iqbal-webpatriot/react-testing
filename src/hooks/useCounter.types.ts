@@ -1,3 +1,3 @@
 export type initialState = {
- initialValue?:number
-}
+  initialValue?: number;
+};
