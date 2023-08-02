@@ -29,6 +29,38 @@ describe('Login', () => {
       expect(allErrorMessageElements.length).toEqual(2);
     });
   });
+  test('error message is rendered when user forget to input password', async () => {
+    user.setup();
+    render(<Login />);
+    const usernameElement = screen.getByLabelText(/username:/i);
+    await act(async () => {
+      await user.type(usernameElement, 'admin');
+    });
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /login/i }));
+    });
+    await waitFor(async () => {
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'This field is required',
+      );
+    });
+  });
+  test('error message is rendered when user forget to input username', async () => {
+    user.setup();
+    render(<Login />);
+    const passwordElement = screen.getByLabelText(/password:/i);
+    await act(async () => {
+      await user.type(passwordElement, 'admin123');
+    });
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /login/i }));
+    });
+    await waitFor(async () => {
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'This field is required',
+      );
+    });
+  });
   test('user should be able to fill form and  login', async () => {
     user.setup();
     render(<Login />);
