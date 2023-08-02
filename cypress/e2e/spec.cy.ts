@@ -1,3 +1,4 @@
+/* eslint-disable no-loop-func */
 describe('React Testing Project ', () => {
   it('Job Application form', () => {
     cy.visit('http://localhost:3000');
@@ -17,7 +18,6 @@ describe('React Testing Project ', () => {
     let initialCount: number = 0;
     cy.findByRole('heading').then(($str) => {
       let res = $str.text().replace(/[^0-9.-]/g, '');
-      console.log('initial count', res);
       initialCount = +res;
     });
 
@@ -25,21 +25,22 @@ describe('React Testing Project ', () => {
     for (let i = 0; i < 5; i++) {
       cy.findByRole('button', { name: /increment/i }).click();
       cy.wait(500); // Wait for 500ms
+      cy.findByRole('heading').then(($str) => {
+        let res = $str.text().replace(/[^0-9.-]/g, '');
+        expect(+res).to.be.greaterThan(initialCount);
+        initialCount = +res;
+      });
     }
-    cy.findByRole('heading').then(($str) => {
-      let res = $str.text().replace(/[^0-9.-]/g, '');
-      expect(+res).to.be.greaterThan(initialCount);
-      initialCount = +res;
-    });
 
     // Hit decrement button 5 times and test value is updated
     for (let i = 0; i < 5; i++) {
       cy.findByRole('button', { name: /decrement/i }).click();
       cy.wait(500); // Wait for 500ms
+      cy.findByRole('heading').then(($str) => {
+        let res = $str.text().replace(/[^0-9.-]/g, '');
+        expect(+res).to.be.lessThan(initialCount);
+        initialCount = +res;
+      });
     }
-    cy.findByRole('heading').then(($str) => {
-      let res = $str.text().replace(/[^0-9.-]/g, '');
-      expect(+res).to.be.lessThan(initialCount);
-    });
   });
 });
