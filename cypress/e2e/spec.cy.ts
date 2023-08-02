@@ -43,4 +43,33 @@ describe('React Testing Project ', () => {
       });
     }
   });
+  it('Login Application ', () => {
+    cy.intercept('POST', '/login').as('login'); // Intercept the login request
+
+    cy.visit('http://localhost:3000/login'); // Visit the login page
+
+    // Fill out and submit the login form
+    cy.get('input[name="username"]').type('admin');
+    cy.get('input[name="password"]').type('admin123');
+    cy.get('button[type="submit"]').click();
+
+    // // Wait for the login request to complete
+    // cy.wait('@login').then((interception) => {
+    //   const { response } = interception;
+    //   // Now TypeScript knows that 'response' is not undefined here
+    //   expect(response?.statusCode).to.equal(200);
+    //   expect(response?.body).to.include({
+    //     status: 'success',
+    //     user: {
+    //       username: 'admin',
+    //       fullName: 'dummy test admin',
+    //       id: 121212,
+    //     },
+    //   });
+    // });
+
+    // Add assertions to check the behavior of your application after successful login
+    // For example, you might check that the user is redirected to a different page
+    // cy.url().should('include', '/dashboard');
+  });
 });

@@ -19,7 +19,7 @@ export const handlers = [
       );
     } else {
       return res(
-        ctx.status(400),
+        ctx.status(200),
         ctx.json({
           status: 'failed',
           errorMessage: 'Please check your username or password',
