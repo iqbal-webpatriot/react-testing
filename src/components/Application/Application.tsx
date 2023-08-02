@@ -33,7 +33,14 @@ export default function Application() {
         <label htmlFor="terms">I accept the terms and conditions</label>
         <br />
 
-        <input type="submit" value="Submit Application" />
+        <input
+          type="submit"
+          value="Submit Application"
+          onClick={(e) => {
+            e.preventDefault();
+            alert('Form Submitted');
+          }}
+        />
         {/* <button>Submit</button> */}
       </form>
     </>
