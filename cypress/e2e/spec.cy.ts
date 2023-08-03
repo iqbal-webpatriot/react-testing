@@ -43,33 +43,43 @@ describe('React Testing Project ', () => {
       });
     }
   });
-  it('Login Application ', () => {
-    cy.intercept('POST', '/login').as('login'); // Intercept the login request
+  describe('Login', () => {
+    beforeEach(() => {
+      cy.visit('http://localhost:3000/login'); // Visit the login page before each test
+    });
 
-    cy.visit('http://localhost:3000/login'); // Visit the login page
+    it('handles login errors and success', () => {
+      // Click submit with empty fields and check error message
+      cy.get('button[type="submit"]').click();
+      cy.wait(1000);
+      cy.findAllByRole('alert').should('contain', 'This field is required');
 
-    // Fill out and submit the login form
-    cy.get('input[name="username"]').type('admin');
-    cy.get('input[name="password"]').type('admin123');
-    cy.get('button[type="submit"]').click();
-
-    // // Wait for the login request to complete
-    // cy.wait('@login').then((interception) => {
-    //   const { response } = interception;
-    //   // Now TypeScript knows that 'response' is not undefined here
-    //   expect(response?.statusCode).to.equal(200);
-    //   expect(response?.body).to.include({
-    //     status: 'success',
-    //     user: {
-    //       username: 'admin',
-    //       fullName: 'dummy test admin',
-    //       id: 121212,
-    //     },
-    //   });
-    // });
-
-    // Add assertions to check the behavior of your application after successful login
-    // For example, you might check that the user is redirected to a different page
-    // cy.url().should('include', '/dashboard');
+      // Check error for empty username
+      cy.get('input[name="password"]').type('password');
+      cy.get('button[type="submit"]').click();
+      cy.findByRole('alert').should('contain', 'This field is required');
+      cy.wait(1000);
+      // Check error for empty password
+      cy.get('input[name="password"]').clear(); // Clear the password field
+      cy.get('input[name="username"]').type('username');
+      cy.get('button[type="submit"]').click();
+      cy.findByRole('alert').should('contain', 'This field is required');
+      cy.wait(1000);
+      // Check error for invalid login
+      cy.get('input[name="username"]').clear().type('wrong_username');
+      cy.get('input[name="password"]').type('wrong_password');
+      cy.get('button[type="submit"]').click();
+      cy.findByRole('alert').should(
+        'contain',
+        'Please check your username or password',
+      );
+      cy.wait(1000);
+      // Check successful login
+      cy.get('input[name="username"]').clear().type('admin');
+      cy.get('input[name="password"]').clear().type('admin123');
+      cy.get('button[type="submit"]').click();
+      cy.findByRole('alert').should('contain', 'Logged Successfully');
+      // cy.url().should('include', '/dashboard'); // Assuming the user is redirected to /dashboard on successful login
+    });
   });
 });
