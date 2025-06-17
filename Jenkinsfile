@@ -1,56 +1,52 @@
 pipeline {
-  agent { label 'docker-agent-alpine' }
+  agent any
+    tools {
+        nodejs 'nodejs-24'
+    }
+
+  environment {
+    CI = 'true'
+  }
 
   stages {
-    stage('📦 Install All Dependencies') {
+    stage('Checkout') {
       steps {
-        script {
-          docker.image('node:18-alpine').inside('-v $HOME/.npm:/root/.npm') {
-            sh 'npm ci'
-          }
-        }
+        checkout scm
       }
     }
 
-    stage('🧹 Code Quality Checks') {
+    stage('Install Dependencies') {
       steps {
-        script {
-          docker.image('node:18-alpine').inside('-v $HOME/.npm:/root/.npm') {
-            sh 'npm run lint'
-          }
-        }
+        sh 'npm install'
       }
     }
 
-    stage('🧪 Run Tests') {
+    stage('Lint & Format Check') {
       steps {
-        script {
-          docker.image('node:18-alpine').inside('-v $HOME/.npm:/root/.npm') {
-            sh 'npm run test'
-          }
-        }
+        sh 'npm run lint'
+        sh 'npm run format'
       }
     }
 
-    stage('🧼 Clean & Prepare for Production') {
+    stage('Run Tests') {
       steps {
-        script {
-          docker.image('node:18-alpine').inside('-v $HOME/.npm:/root/.npm') {
-            sh 'rm -rf node_modules'
-            sh 'npm ci --omit=dev'
-          }
-        }
+        sh 'npm run test -- --watchAll=false'
       }
     }
 
-    stage('⚙️ Build Production Files') {
+    stage('Build App') {
       steps {
-        script {
-          docker.image('node:18-alpine').inside('-v $HOME/.npm:/root/.npm') {
-            sh 'npm run build'
-          }
-        }
+        sh 'npm run build'
       }
+    }
+  }
+
+  post {
+    failure {
+      echo '🚨 Pipeline failed! Please check the logs.'
+    }
+    success {
+      echo '✅ Pipeline completed successfully!'
     }
   }
 }
