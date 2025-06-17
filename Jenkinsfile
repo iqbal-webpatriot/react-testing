@@ -1,5 +1,10 @@
 pipeline {
-  agent any
+agent {
+    docker {
+      image 'node:18-alpine'
+      args '-v $HOME/.npm:/root/.npm'
+    }
+  }
 
   stages {
     stage('📦 Install All Dependencies') {
