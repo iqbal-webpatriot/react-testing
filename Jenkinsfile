@@ -1,11 +1,14 @@
 pipeline {
-  agent any
-    tools {
-        nodejs 'nodejs-24'
+  agent {
+    docker {
+      image 'node:18-alpine'
+      args '-v $HOME/.npm:/root/.npm'
     }
+  }
 
   environment {
     CI = 'true'
+    IMAGE_NAME = 'localhost:5000/react-testing'
   }
 
   stages {
@@ -17,7 +20,7 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        sh 'npm install'
+        sh 'npm ci'
       }
     }
 
@@ -39,6 +42,20 @@ pipeline {
         sh 'npm run build'
       }
     }
+
+    stage('Build Docker Image') {
+      agent any  // Run Docker build on the host (not inside node container)
+      steps {
+        sh 'docker build -t $IMAGE_NAME .'
+      }
+    }
+
+    stage('Push to Local Registry') {
+      agent any
+      steps {
+        sh 'docker push $IMAGE_NAME'
+      }
+    }
   }
 
   post {
@@ -46,7 +63,7 @@ pipeline {
       echo '🚨 Pipeline failed! Please check the logs.'
     }
     success {
-      echo '✅ Pipeline completed successfully!'
+      echo '✅ Image built and pushed to local registry!'
     }
   }
 }
