@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:18-alpine'
-      args '-v $HOME/.npm:/root/.npm'
-    }
-  }
+  agent none // No global agent
 
   environment {
     CI = 'true'
@@ -13,47 +8,43 @@ pipeline {
 
   stages {
     stage('Checkout') {
+      agent any
       steps {
         checkout scm
       }
     }
 
-    stage('Install Dependencies') {
+    stage('Node Operations') {
+      agent {
+        docker {
+          image 'node:18-alpine'
+          args '-v $HOME/.npm:/root/.npm -v $WORKSPACE:/app'
+          reuseNode true // Runs on same worker where Jenkins is running
+        }
+      }
       steps {
-        sh 'npm ci'
+        dir('/app') {
+          sh 'npm ci'
+          sh 'npm run lint'
+          sh 'npm run format'
+          sh 'npm run test -- --watchAll=false'
+          sh 'npm run build'
+        }
       }
     }
 
-    stage('Lint & Format Check') {
+    stage('Build & Push Docker Image') {
+      agent any // Uses the main Jenkins agent with Docker access
       steps {
-        sh 'npm run lint'
-        sh 'npm run format'
-      }
-    }
-
-    stage('Run Tests') {
-      steps {
-        sh 'npm run test -- --watchAll=false'
-      }
-    }
-
-    stage('Build App') {
-      steps {
-        sh 'npm run build'
-      }
-    }
-
-    stage('Build Docker Image') {
-      agent any  // Run Docker build on the host (not inside node container)
-      steps {
-        sh 'docker build -t $IMAGE_NAME .'
-      }
-    }
-
-    stage('Push to Local Registry') {
-      agent any
-      steps {
-        sh 'docker push $IMAGE_NAME'
+        script {
+          // Build using the host's Docker
+          docker.build("${IMAGE_NAME}")
+          
+          // Push to local registry
+          docker.withRegistry('http://localhost:5000') {
+            docker.image("${IMAGE_NAME}").push()
+          }
+        }
       }
     }
   }
