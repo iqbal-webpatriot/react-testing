@@ -18,7 +18,7 @@ pipeline {
       agent {
         docker {
           image 'node:18-alpine'
-          args "-v $HOME/.npm:/root/.npm -v ${env.WORKSPACE}:${env.WORKSPACE}"
+          args "-v ${env.HOME}/.npm:/root/.npm -v ${env.WORKSPACE}:${env.WORKSPACE}"
           reuseNode true
         }
       }
