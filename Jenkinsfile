@@ -4,7 +4,7 @@ pipeline {
   environment {
     CI = 'true'
     IMAGE_NAME = 'localhost:5000/react-testing'
-    DOCKER_BUILD_ARGS = '--pull --no-cache' // Ensures clean builds
+    DOCKER_BUILDKIT = '1'
   }
 
   stages {
@@ -15,70 +15,51 @@ pipeline {
       }
     }
 
-    stage('Install & Test') {
+    stage('Lint & Test') {
       agent {
         docker {
           image 'node:18-alpine'
-          args "-v ${env.HOME}/.npm:/root/.npm -v ${env.WORKSPACE}:${env.WORKSPACE}"
           reuseNode true
         }
       }
       steps {
-        dir("${env.WORKSPACE}") {
-          sh 'echo 📦 Installing dependencies...'
-          sh 'npm ci'
+        sh 'echo "🧹 Running lint..."'
+        sh 'npm run lint'
 
-          sh 'echo 🧪 Running lint...'
-          sh 'npm run lint || true'
-
-          sh 'echo ✨ Checking formatting...'
-          sh 'npm run format || true'
-
-          sh 'echo 🧪 Running tests...'
-          sh 'npm run test -- --watchAll=false'
-
-          sh 'echo � Building app...'
-          sh 'npm run build'
-        }
+        sh 'echo "🧪 Running tests..."'
+        sh 'npm run test -- --watchAll=false --ci'
       }
     }
 
     stage('Build Production Image') {
       agent any
-      when {
-        expression { 
-          // Only build if tests passed (implied by reaching this stage)
-          return true 
-        }
-      }
       steps {
         script {
-          // Verify Dockerfile exists
-          def dockerfile = fileExists 'Dockerfile'
-          if (!dockerfile) {
+          // Verify critical files exist
+          if (!fileExists('Dockerfile')) {
             error '❌ Dockerfile not found in project root!'
           }
 
-          echo "🐳 Building production image using project Dockerfile..."
+          // Get git commit SHA for immutable tagging
+          def gitCommit = sh(
+            script: 'git rev-parse --short HEAD', 
+            returnStdout: true
+          ).trim()
           
-          // Build with custom tags including git commit hash
-          def gitCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-          def buildDate = sh(returnStdout: true, script: 'date +%Y%m%d-%H%M').trim()
-          
-          docker.build("${IMAGE_NAME}:${gitCommit}", 
-                      "--build-arg BUILD_DATE=${buildDate} " +
-                      "--build-arg VCS_REF=${gitCommit} " +
-                      "${env.DOCKER_BUILD_ARGS} .")
-          
-          // Tag as latest
-          docker.image("${IMAGE_NAME}:${gitCommit}").inside {
-            sh "docker tag ${IMAGE_NAME}:${gitCommit} ${IMAGE_NAME}:latest"
-          }
+          echo "🐳 Building Docker image (including production build)..."
+          docker.build(
+            "${IMAGE_NAME}:${gitCommit}",
+            "--build-arg NODE_ENV=production ."
+          )
 
-          echo "📤 Pushing Docker image to local registry..."
+          // Additional quality checks can be added here
+          echo "🔍 Verifying image contents..."
+          def imageId = docker.image("${IMAGE_NAME}:${gitCommit}").id
+          sh "docker run --rm ${imageId} ls -l /usr/share/nginx/html"
+          
+          echo "📤 Pushing to registry..."
           docker.withRegistry('http://localhost:5000') {
             docker.image("${IMAGE_NAME}:${gitCommit}").push()
-            docker.image("${IMAGE_NAME}:latest").push()
           }
         }
       }
@@ -86,12 +67,21 @@ pipeline {
   }
 
   post {
-    failure {
-      echo '🚨 Pipeline failed! Please check the logs.'
+    always {
+      echo "🧹 Cleanup completed"
     }
     success {
-      echo '✅ Docker image built and pushed to local registry!'
-      echo "Image tags: ${IMAGE_NAME}:<git-commit> and ${IMAGE_NAME}:latest"
+      script {
+        def gitCommit = sh(
+          script: 'git rev-parse --short HEAD', 
+          returnStdout: true
+        ).trim()
+        echo "✅ Success! Production image pushed as:"
+        echo "${IMAGE_NAME}:${gitCommit}"
+      }
+    }
+    failure {
+      echo "🚨 Pipeline failed! Check logs for details."
     }
   }
 }
