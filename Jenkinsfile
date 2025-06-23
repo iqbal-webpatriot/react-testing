@@ -4,6 +4,7 @@ pipeline {
   environment {
     CI = 'true'
     IMAGE_NAME = 'localhost:5000/react-testing'
+    DOCKER_BUILD_ARGS = '--pull --no-cache' // Ensures clean builds
   }
 
   stages {
@@ -36,22 +37,48 @@ pipeline {
           sh 'echo 🧪 Running tests...'
           sh 'npm run test -- --watchAll=false'
 
-          sh 'echo 🏗️ Building app...'
+          sh 'echo � Building app...'
           sh 'npm run build'
         }
       }
     }
 
-    stage('Build & Push Docker Image') {
+    stage('Build Production Image') {
       agent any
+      when {
+        expression { 
+          // Only build if tests passed (implied by reaching this stage)
+          return true 
+        }
+      }
       steps {
         script {
-          echo "🐳 Building Docker image: ${IMAGE_NAME}"
-          docker.build("${IMAGE_NAME}", ".")
+          // Verify Dockerfile exists
+          def dockerfile = fileExists 'Dockerfile'
+          if (!dockerfile) {
+            error '❌ Dockerfile not found in project root!'
+          }
+
+          echo "🐳 Building production image using project Dockerfile..."
+          
+          // Build with custom tags including git commit hash
+          def gitCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+          def buildDate = sh(returnStdout: true, script: 'date +%Y%m%d-%H%M').trim()
+          
+          docker.build("${IMAGE_NAME}:${gitCommit}", 
+                      "--build-arg BUILD_DATE=${buildDate} " +
+                      "--build-arg VCS_REF=${gitCommit} " +
+                      "${env.DOCKER_BUILD_ARGS} .")
+          
+          // Tag as latest
+          docker.image("${IMAGE_NAME}:${gitCommit}").inside {
+            sh "docker tag ${IMAGE_NAME}:${gitCommit} ${IMAGE_NAME}:latest"
+          }
 
           echo "📤 Pushing Docker image to local registry..."
           docker.withRegistry('http://localhost:5000') {
-            docker.image("${IMAGE_NAME}").push()
+            docker.image("${IMAGE_NAME}:${gitCommit}").push()
+            docker.image("${IMAGE_NAME}:latest").push()
           }
         }
       }
@@ -64,6 +91,7 @@ pipeline {
     }
     success {
       echo '✅ Docker image built and pushed to local registry!'
+      echo "Image tags: ${IMAGE_NAME}:<git-commit> and ${IMAGE_NAME}:latest"
     }
   }
 }
