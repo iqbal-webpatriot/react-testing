@@ -15,7 +15,7 @@ pipeline {
       }
     }
 
-    stage('Lint & Test') {
+    stage('Install, Test & Build') {
       agent {
         docker {
           image 'node:18-alpine'
@@ -23,11 +23,20 @@ pipeline {
         }
       }
       steps {
+        // Install ALL dependencies (including devDependencies)
+        sh 'echo "📦 Installing all dependencies..."'
+        sh 'npm install'
+        
+        // Run quality checks
         sh 'echo "🧹 Running lint..."'
         sh 'npm run lint'
-
+        
         sh 'echo "🧪 Running tests..."'
         sh 'npm run test -- --watchAll=false --ci'
+        
+        // Build production assets (will be rebuilt in Docker)
+        sh 'echo "🏗️ Building production bundle..."'
+        sh 'npm run build'
       }
     }
 
@@ -41,21 +50,23 @@ pipeline {
           }
 
           // Get git commit SHA for immutable tagging
-          def gitCommit = sh(
-            script: 'git rev-parse --short HEAD', 
-            returnStdout: true
-          ).trim()
+          def gitCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
           
-          echo "🐳 Building Docker image (including production build)..."
+          echo "🐳 Building optimized Docker image..."
           docker.build(
             "${IMAGE_NAME}:${gitCommit}",
             "--build-arg NODE_ENV=production ."
           )
-
-          // Additional quality checks can be added here
-          echo "🔍 Verifying image contents..."
+          
+          // Verify production image doesn't contain dev dependencies
+          echo "🔍 Verifying production image..."
           def imageId = docker.image("${IMAGE_NAME}:${gitCommit}").id
-          sh "docker run --rm ${imageId} ls -l /usr/share/nginx/html"
+          sh """
+            if docker run --rm ${imageId} npm list | grep -q 'devDependencies'; then
+              echo "ERROR: Dev dependencies found in production image!"
+              exit 1
+            fi
+          """
           
           echo "📤 Pushing to registry..."
           docker.withRegistry('http://localhost:5000') {
@@ -72,10 +83,7 @@ pipeline {
     }
     success {
       script {
-        def gitCommit = sh(
-          script: 'git rev-parse --short HEAD', 
-          returnStdout: true
-        ).trim()
+        def gitCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         echo "✅ Success! Production image pushed as:"
         echo "${IMAGE_NAME}:${gitCommit}"
       }
