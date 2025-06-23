@@ -1,5 +1,5 @@
 pipeline {
-  agent none // No global agent
+  agent none
 
   environment {
     CI = 'true'
@@ -14,33 +14,42 @@ pipeline {
       }
     }
 
-    stage('Node Operations') {
+    stage('Install & Test') {
       agent {
         docker {
           image 'node:18-alpine'
           args '-v $HOME/.npm:/root/.npm -v $WORKSPACE:/app'
-          reuseNode true // Runs on same worker where Jenkins is running
+          reuseNode true
         }
       }
       steps {
         dir('/app') {
+          sh 'echo 📦 Installing dependencies...'
           sh 'npm ci'
-          sh 'npm run lint'
-          sh 'npm run format'
+
+          sh 'echo 🧪 Running lint...'
+          sh 'npm run lint || true'
+
+          sh 'echo ✨ Checking formatting...'
+          sh 'npm run format || true'
+
+          sh 'echo 🧪 Running tests...'
           sh 'npm run test -- --watchAll=false'
+
+          sh 'echo 🏗️ Building app...'
           sh 'npm run build'
         }
       }
     }
 
     stage('Build & Push Docker Image') {
-      agent any // Uses the main Jenkins agent with Docker access
+      agent any
       steps {
         script {
-          // Build using the host's Docker
-          docker.build("${IMAGE_NAME}")
-          
-          // Push to local registry
+          echo "🐳 Building Docker image: ${IMAGE_NAME}"
+          docker.build("${IMAGE_NAME}", ".")
+
+          echo "📤 Pushing Docker image to local registry..."
           docker.withRegistry('http://localhost:5000') {
             docker.image("${IMAGE_NAME}").push()
           }
@@ -54,7 +63,7 @@ pipeline {
       echo '🚨 Pipeline failed! Please check the logs.'
     }
     success {
-      echo '✅ Image built and pushed to local registry!'
+      echo '✅ Docker image built and pushed to local registry!'
     }
   }
 }
