@@ -18,12 +18,12 @@ pipeline {
       agent {
         docker {
           image 'node:18-alpine'
-          args '-v $HOME/.npm:/root/.npm -v $WORKSPACE:/app'
+          args "-v $HOME/.npm:/root/.npm -v ${env.WORKSPACE}:${env.WORKSPACE}"
           reuseNode true
         }
       }
       steps {
-        dir('/app') {
+        dir("${env.WORKSPACE}") {
           sh 'echo 📦 Installing dependencies...'
           sh 'npm ci'
 
