@@ -34,9 +34,6 @@ pipeline {
         sh 'echo "🧪 Running tests..."'
         sh 'npm run test -- --watchAll=false --ci'
         
-        // Build production assets (will be rebuilt in Docker)
-        sh 'echo "🏗️ Building production bundle..."'
-        sh 'npm run build'
       }
     }
 
