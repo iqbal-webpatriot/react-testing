@@ -72,6 +72,31 @@ pipeline {
         }
       }
     }
+     stage('Deploying App to Docker Container') {
+      agent any
+      steps {
+        script {
+          def gitCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+
+          echo "🛑 Stopping old container (if any)..."
+          sh """
+            if docker ps -q --filter "name=react-testing" | grep -q .; then
+              docker stop react-testing
+              docker rm react-testing
+            fi
+          """
+
+          echo "📦 Deploying new container..."
+          sh """
+            docker run -d \
+              --name react-testing \
+              -p 3000:3000 \
+              ${IMAGE_NAME}:${gitCommit}
+          """
+        }
+      }
+    }
+
   }
 
   post {
@@ -79,11 +104,7 @@ pipeline {
       echo "🧹 Cleanup completed"
     }
     success {
-      script {
-        def gitCommit = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-        echo "✅ Success! Production image pushed as:"
-        echo "${IMAGE_NAME}:${gitCommit}"
-      }
+        echo "✅ Success! Production image built and pushed successfully."
     }
     failure {
       echo "🚨 Pipeline failed! Check logs for details."

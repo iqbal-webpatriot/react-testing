@@ -1,26 +1,30 @@
-# Stage 1: Builder - Install ALL dependencies (including dev)
+# -------- Stage 1: Build React App --------
 FROM node:18-alpine AS builder
+
 WORKDIR /app
+
+# Install dependencies
 COPY package*.json ./
 RUN npm install
+
+# Copy app source code
 COPY . .
+
+# Build the app for production
 RUN npm run build
 
-# Stage 2: Production - Only install runtime dependencies
+# -------- Stage 2: Serve with http-server --------
 FROM node:18-alpine AS production
+
 WORKDIR /app
-ENV NODE_ENV production
 
-# 1. Disable husky by default
-ENV HUSKY=0
+# Install a lightweight static server
+RUN npm install -g http-server
 
-# 2. Copy only production files
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/build ./build
+# Copy built files from builder
+COPY --from=builder /app/build /app/build
 
-# 3. Install production deps with ignore-scripts flag
-RUN npm ci --only=production --ignore-scripts
-
-# Runtime configuration
 EXPOSE 3000
-CMD ["node", "build/index.js"]
+
+# Serve the React app
+CMD ["http-server", "build", "-p", "3000"]
